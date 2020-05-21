@@ -1,0 +1,47 @@
+{
+  "name": "n3xt0r/laravel-mysql-sync",
+  "description": "Syncing Database from one environment to the other",
+  "type": "library",
+  "keywords": [
+    "laravel",
+    "syncing",
+    "database synchronization",
+    "referential integrity"
+  ],
+  "require": {
+    "php": ">=7.2.0",
+    "illuminate/database": "^5.6||^6.0",
+    "illuminate/view": "^5.6|^6.0",
+    "illuminate/support": "^5.6|^6.0",
+    "illuminate/container": "^5.6|^6.0"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "~7.0",
+    "orchestra/testbench": "^3.6"
+  },
+  "autoload": {
+    "psr-4": {
+      "N3XT0R\\MySqlSync\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Tests\\": "tests/"
+    }
+  },
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Ilya Beliaev",
+      "email": "info@php-dev.info"
+    }
+  ],
+  "minimum-stability": "stable",
+  "extra": {
+    "laravel": {
+      "providers": [
+        "N3XT0R\\MySqlSync\\Providers\\MySqlSyncServiceProvider"
+      ]
+    }
+  }
+}

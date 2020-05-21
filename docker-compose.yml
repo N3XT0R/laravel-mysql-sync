@@ -1,0 +1,22 @@
+version: '3.7'
+
+services:
+  db_sync:
+    image: mysql:5.7
+    volumes:
+      - ./build/data/db/:/var/lib/mysql
+    ports:
+      - "3322:3306"
+    environment:
+      - MYSQL_DATABASE=testing
+      - MYSQL_USER=sync
+      - MYSQL_PASSWORD=sync
+      - MYSQL_ALLOW_EMPTY_PASSWORD=yes
+  php:
+    build:
+      context: .
+      dockerfile: app.Dockerfile
+    volumes:
+      - .:/var/www/html/:consistent
+    depends_on:
+      - db_sync
