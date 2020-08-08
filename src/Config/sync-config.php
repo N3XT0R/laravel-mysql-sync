@@ -45,7 +45,14 @@ return [
     |
     */
     'databases' => [
-        [
+        'db1' => [
+            'connection' => 'production',
+            'host' => 'localhost',
+            'database' => 'homestead',
+            'user' => 'root',
+            'password' => '',
+        ],
+        'db2' => [
             'connection' => 'production',
             'host' => 'localhost',
             'database' => 'homestead',
@@ -53,17 +60,12 @@ return [
             'password' => '',
         ],
     ],
-    /*
-    |--------------------------------------------------------------------------
-    | Remote Server Groups
-    |--------------------------------------------------------------------------
-    |
-    | Here you may list connections under a single group name, which allows
-    | you to easily access all of the servers at once using a short name
-    | that is extremely easy to remember, such as "web" or "database".
-    |
-    */
-    'groups' => [
-        'web' => ['production'],
+    'environments' => [
+        'production' => [
+            'databases' => [
+                'db1',
+                'db2',
+            ],
+        ],
     ],
 ];
