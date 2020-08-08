@@ -11,7 +11,7 @@ class MysqlSyncCommand extends Command
 {
     use ConfirmableTrait;
 
-    protected $signature = 'db:sync';
+    protected $name = 'db:sync';
 
 
     public function handle(): int
