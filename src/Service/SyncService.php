@@ -5,6 +5,10 @@ namespace N3XT0R\MysqlSync;
 use Collective\Remote\ConnectionInterface;
 use Collective\Remote\RemoteManager;
 use Illuminate\Config\Repository;
+use Illuminate\Filesystem\FilesystemManager;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use Symfony\Component\Process\Process;
 
 class SyncService
 {
@@ -18,6 +22,7 @@ class SyncService
     {
         $this->setSshManager($sshManager);
         $this->setConfig($config);
+        $this->setStoragePath($storagePath);
     }
 
     /**
@@ -94,7 +99,7 @@ class SyncService
 
     public function sync(string $environment): bool
     {
-        $result = false;
+        $result = true;
         $sshManager = $this->getSshManager();
         $connectionConfig = $this->getPreparedConnectionConfig($environment);
 
@@ -103,7 +108,9 @@ class SyncService
             $sshConn = $sshManager->connection($connection);
 
             foreach ($configs as $config) {
-                $this->runDatabaseCopy($sshConn, $config);
+                if (false === $this->runDatabaseCopy($sshConn, $config)) {
+                    $result = false;
+                }
             }
         }
 
@@ -112,15 +119,41 @@ class SyncService
     }
 
 
-    protected function runDatabaseCopy(ConnectionInterface $sshConn, array $config)
+    protected function runDatabaseCopy(ConnectionInterface $sshConn, array $config): bool
     {
+        $result = false;
         $storagePath = $this->getStoragePath();
+        $dbNameDefault = $this->getConfig()->get(
+            'database.connections.' . $this->getConfig()->get('database.default') . 'database'
+        );
+        /**
+         * @var FilesystemManager $filesystem
+         */
+        $filesystem = Storage::getFacadeRoot();
+        $adapter = $filesystem->createLocalDriver(['root' => $storagePath]);
+        if ($adapter->has('dumps')) {
+            $adapter->createDir('dumps');
+        }
         $tmpName = $config['db'] . '_' . date('d_m_y_h_i_s') . '.sql';
         $remotePath = '/tmp/' . $tmpName;
+        $localPath = $storagePath . DIRECTORY_SEPARATOR . 'dumps' . DIRECTORY_SEPARATOR . $tmpName;
+
         $sshConn->run([
             "mysqldump -h{$config['host']} -u{$config['user']} -p{$config['password']} {$config['db']} | sed -e 's/DEFINER[ ]*=[ ]*[^*]*\*/\*/' > " . $remotePath
         ]);
-        $sshConn->get($remotePath, $storagePath . DIRECTORY_SEPARATOR . $tmpName);
+        $sshConn->get($remotePath, $localPath);
+
+        if ($adapter->has($localPath) &&
+            true === DB::connection()->statement('DROP DATABASE `' . $dbNameDefault . '`; CREATE DATABASE `' . $dbNameDefault . '`;')) {
+            $importProcess = new Process([
+                'mysql',
+                '-u'
+            ]);
+
+            $result = 0 === $importProcess->run();
+        }
+
+        return $result;
     }
 
 }
