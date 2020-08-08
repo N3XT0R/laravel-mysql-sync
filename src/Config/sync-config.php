@@ -55,5 +55,4 @@ return [
     'groups' => [
         'web' => ['production'],
     ],
-
 ];
