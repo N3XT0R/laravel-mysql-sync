@@ -4,7 +4,7 @@ namespace N3XT0R\MySqlSync\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Console\ConfirmableTrait;
-use N3XT0R\MysqlSync\SyncService;
+use N3XT0R\MySqlSync\SyncService;
 use Symfony\Component\Console\Input\InputOption;
 
 class MysqlSyncCommand extends Command

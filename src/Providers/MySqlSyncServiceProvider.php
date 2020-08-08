@@ -8,7 +8,7 @@ use Collective\Remote\RemoteServiceProvider;
 use Illuminate\Contracts\Container\Container as Application;
 use Illuminate\Support\ServiceProvider;
 use N3XT0R\MySqlSync\Console\Commands;
-use N3XT0R\MysqlSync\SyncService;
+use N3XT0R\MySqlSync\SyncService;
 
 class MySqlSyncServiceProvider extends ServiceProvider
 {
