@@ -39,7 +39,6 @@ class MysqlSyncCommand extends Command
     {
         return [
             ['environment', null, InputOption::VALUE_OPTIONAL, 'The environment to sync e.g. production'],
-            ['force', null, InputOption::VALUE_NONE, 'Force the operation to run when in production'],
         ];
     }
 }
