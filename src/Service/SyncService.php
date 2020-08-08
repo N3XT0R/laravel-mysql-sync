@@ -121,6 +121,7 @@ class SyncService
 
     protected function runDatabaseCopy(ConnectionInterface $sshConn, array $config): bool
     {
+        $log = [];
         $result = false;
         $storagePath = $this->getStoragePath();
         $dbDefaultConfig = $this->getConfig()->get(
@@ -131,16 +132,21 @@ class SyncService
          */
         $filesystem = Storage::getFacadeRoot();
         $adapter = $filesystem->createLocalDriver(['root' => $storagePath]);
-        if ($adapter->has('dumps')) {
+        if (false === $adapter->has('dumps')) {
             $adapter->createDir('dumps');
         }
         $tmpName = $config['database'] . '_' . date('d_m_y_h_i_s') . '.sql';
         $remotePath = '/tmp/' . $tmpName;
         $localPath = $storagePath . DIRECTORY_SEPARATOR . 'dumps' . DIRECTORY_SEPARATOR . $tmpName;
 
-        $sshConn->run([
-            "mysqldump -h{$config['host']} -u{$config['user']} -p{$config['password']} {$config['database']} | sed -e 's/DEFINER[ ]*=[ ]*[^*]*\*/\*/' > " . $remotePath
-        ]);
+        $sshConn->run(
+            [
+                "mysqldump -h{$config['host']} -u{$config['user']} -p{$config['password']} {$config['database']} | sed -e 's/DEFINER[ ]*=[ ]*[^*]*\*/\*/' > " . $remotePath
+            ],
+            static function (string $line) use (&$log) {
+                $log[] = $line;
+            }
+        );
         $sshConn->get($remotePath, $localPath);
 
         if ($adapter->has($localPath) &&
