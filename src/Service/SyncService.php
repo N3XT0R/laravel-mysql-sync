@@ -3,16 +3,19 @@
 namespace N3XT0R\MysqlSync;
 
 use Collective\Remote\RemoteManager;
+use Illuminate\Config\Repository;
 
 class SyncService
 {
 
     protected $sshManager;
+    protected $config;
 
 
-    public function __construct(RemoteManager $sshManager)
+    public function __construct(RemoteManager $sshManager, Repository $config)
     {
         $this->setSshManager($sshManager);
+        $this->setConfig($config);
     }
 
     /**
@@ -31,11 +34,29 @@ class SyncService
         $this->sshManager = $sshManager;
     }
 
+    /**
+     * @return Repository
+     */
+    public function getConfig(): Repository
+    {
+        return $this->config;
+    }
+
+    /**
+     * @param Repository $config
+     */
+    public function setConfig(Repository $config): void
+    {
+        $this->config = $config;
+    }
+
+
     public function sync(string $environment): bool
     {
         $result = false;
+        $sshManager = $this->getSshManager();
+        $sshManager->connection($environment);
 
-        
         return $result;
     }
 
