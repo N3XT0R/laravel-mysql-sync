@@ -55,6 +55,8 @@ class SyncService
     {
         $result = false;
         $sshManager = $this->getSshManager();
+        $config = $this->getConfig();
+        $environmentConfig = $config->get('mysql-sync.environments.' . $environment);
         $sshManager->connection($environment);
 
         return $result;
