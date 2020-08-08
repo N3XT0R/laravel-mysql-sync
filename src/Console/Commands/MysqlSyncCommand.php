@@ -4,7 +4,6 @@ namespace N3XT0R\MySqlSync\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Console\ConfirmableTrait;
-use Illuminate\Database\ConnectionResolverInterface as Resolver;
 use N3XT0R\MysqlSync\SyncService;
 use Symfony\Component\Console\Input\InputOption;
 
@@ -14,34 +13,6 @@ class MysqlSyncCommand extends Command
 
     protected $signature = 'db:sync {environment}';
 
-    /**
-     * The connection resolver instance.
-     *
-     * @var \Illuminate\Database\ConnectionResolverInterface
-     */
-    protected $resolver;
-
-    /**
-     * Create a new database seed command instance.
-     *
-     * @param \Illuminate\Database\ConnectionResolverInterface $resolver
-     * @return void
-     */
-    public function __construct(Resolver $resolver)
-    {
-        parent::__construct();
-        $this->setResolver($resolver);
-    }
-
-    public function setResolver(Resolver $resolver): void
-    {
-        $this->resolver = $resolver;
-    }
-
-    public function getResolver(): Resolver
-    {
-        return $this->resolver;
-    }
 
     public function handle(): int
     {
