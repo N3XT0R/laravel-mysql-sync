@@ -3,9 +3,12 @@
 namespace N3XT0R\MySqlSync\Providers;
 
 use Collective\Remote\RemoteFacade;
+use Collective\Remote\RemoteManager;
 use Collective\Remote\RemoteServiceProvider;
+use Illuminate\Contracts\Container\Container as Application;
 use Illuminate\Support\ServiceProvider;
 use N3XT0R\MysqlSync\Console\Commands;
+use N3XT0R\MysqlSync\SyncService;
 
 class MySqlSyncServiceProvider extends ServiceProvider
 {
@@ -39,6 +42,25 @@ class MySqlSyncServiceProvider extends ServiceProvider
     {
         $this->mergeConfigFrom(__DIR__ . '/../Config/sync-config.php', 'mysql-sync');
         $this->registerCollective();
+        $this->registerServices();
+    }
+
+    protected function registerServices(): void
+    {
+        $this->app->bind(
+            SyncService::class,
+            static function (Application $app) {
+                /**
+                 * @var RemoteManager $remote
+                 */
+                $remote = $app->get('remote');
+                /**
+                 * @var \Illuminate\Config\Repository $config
+                 */
+                $config = $app->get('config');
+                $service = new SyncService($remote, $config, $app->get('path.storage'));
+            }
+        );
     }
 
     protected function registerCollective(): void

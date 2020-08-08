@@ -47,6 +47,7 @@ class MysqlSyncCommand extends Command
         $exitCode = 0;
         if ($this->confirmToProceed()) {
             $environment = $this->argument('environment');
+            $syncService = $this->getLaravel()->get('');
         }
         return $exitCode;
     }
