@@ -61,6 +61,8 @@ class MySqlSyncServiceProvider extends ServiceProvider
                 return new SyncService($remote, $config, $app->get('path.storage'));
             }
         );
+
+        $this->app->singleton(Commands\MysqlSyncCommand::class, Commands\MysqlSyncCommand::class);
     }
 
     protected function registerCollective(): void
