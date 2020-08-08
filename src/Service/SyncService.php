@@ -86,7 +86,7 @@ class SyncService
             foreach ($configs as $config) {
                 $tmpName = '/tmp/' . $config['db'] . '_' . date('d_m_y_h_i_s') . '.sql';
                 $sshConn->run([
-                    "mysqldump -h -u -p |  sed -e 's/DEFINER[ ]*=[ ]*[^*]*\*/\*/' > " . $tmpName
+                    "mysqldump -h{$config['host']} -u{$config['user']} -p{$config['password']} {$config['db']} |  sed -e 's/DEFINER[ ]*=[ ]*[^*]*\*/\*/' > " . $tmpName
                 ]);
             }
         }
