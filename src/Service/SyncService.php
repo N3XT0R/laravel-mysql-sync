@@ -31,4 +31,12 @@ class SyncService
         $this->sshManager = $sshManager;
     }
 
+    public function sync(string $environment): bool
+    {
+        $result = false;
+
+        
+        return $result;
+    }
+
 }
