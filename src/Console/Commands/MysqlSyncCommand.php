@@ -18,8 +18,10 @@ class MysqlSyncCommand extends Command
     public function handle(): int
     {
         $exitCode = 0;
-        $run = ('production' === App::environment() && true === $this->confirmToProceed())
-            || 'production' !== App::environment();
+        $run = 'production' !== App::environment();
+        if (false === $run) {
+            $run = $this->confirmToProceed();
+        }
 
         if (true === $run) {
             $environment = (string)$this->option('environment');
