@@ -2,6 +2,7 @@
 
 namespace N3XT0R\MysqlSync;
 
+use Collective\Remote\ConnectionInterface;
 use Collective\Remote\RemoteManager;
 use Illuminate\Config\Repository;
 
@@ -96,23 +97,30 @@ class SyncService
         $result = false;
         $sshManager = $this->getSshManager();
         $connectionConfig = $this->getPreparedConnectionConfig($environment);
-        $storagePath = $this->getStoragePath();
+
 
         foreach ($connectionConfig as $connection => $configs) {
             $sshConn = $sshManager->connection($connection);
 
             foreach ($configs as $config) {
-                $tmpName = $config['db'] . '_' . date('d_m_y_h_i_s') . '.sql';
-                $remotePath = '/tmp/' . $tmpName;
-                $sshConn->run([
-                    "mysqldump -h{$config['host']} -u{$config['user']} -p{$config['password']} {$config['db']} | sed -e 's/DEFINER[ ]*=[ ]*[^*]*\*/\*/' > " . $remotePath
-                ]);
-                $sshConn->get($remotePath, $storagePath . DIRECTORY_SEPARATOR . $tmpName);
+                $this->runDatabaseCopy($sshConn, $config);
             }
         }
 
 
         return $result;
+    }
+
+
+    protected function runDatabaseCopy(ConnectionInterface $sshConn, array $config)
+    {
+        $storagePath = $this->getStoragePath();
+        $tmpName = $config['db'] . '_' . date('d_m_y_h_i_s') . '.sql';
+        $remotePath = '/tmp/' . $tmpName;
+        $sshConn->run([
+            "mysqldump -h{$config['host']} -u{$config['user']} -p{$config['password']} {$config['db']} | sed -e 's/DEFINER[ ]*=[ ]*[^*]*\*/\*/' > " . $remotePath
+        ]);
+        $sshConn->get($remotePath, $storagePath . DIRECTORY_SEPARATOR . $tmpName);
     }
 
 }
