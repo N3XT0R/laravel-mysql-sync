@@ -24,7 +24,7 @@ class SyncService
     }
 
     /**
-     * @param mixed $sshManager
+     * @param RemoteManager $sshManager
      */
     public function setSshManager(RemoteManager $sshManager): void
     {
