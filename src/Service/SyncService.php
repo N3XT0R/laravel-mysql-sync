@@ -135,7 +135,7 @@ class SyncService
         if (false === $adapter->has('dumps')) {
             $adapter->createDir('dumps');
         }
-        $tmpName = $config['database'] . '_' . date('d_m_y_h_i_s') . '.sql';
+        $tmpName = $config['database'] . '_' . date('YmdHis') . '.sql';
         $remotePath = '/tmp/' . $tmpName;
         $localPath = $storagePath . DIRECTORY_SEPARATOR . 'dumps' . DIRECTORY_SEPARATOR . $tmpName;
 
