@@ -50,14 +50,43 @@ class SyncService
         $this->config = $config;
     }
 
+    protected function getPreparedConnectionConfig(string $environment): array
+    {
+        $preparedConfig = [];
+        $config = $this->getConfig();
+        $databases = $config->get('mysql-sync.environments.' . $environment . '.databases');
+
+        foreach ($databases as $database) {
+            $dbConfig = $config->get('mysql-sync.databases.' . $database);
+            if (!array_key_exists($dbConfig['connection'], $preparedConfig)) {
+                $preparedConfig[$dbConfig['connection']] = [];
+            }
+
+            $preparedConfig[$dbConfig['connection']][] = [
+                'host' => $dbConfig['host'],
+                'database' => $dbConfig['database'],
+                'user' => $dbConfig['user'],
+                'password' => $dbConfig['password'],
+            ];
+        }
+
+        return $preparedConfig;
+    }
+
 
     public function sync(string $environment): bool
     {
         $result = false;
         $sshManager = $this->getSshManager();
-        $config = $this->getConfig();
-        $environmentConfig = $config->get('mysql-sync.environments.' . $environment);
-        $sshManager->connection($environment);
+        $connectionConfig = $this->getPreparedConnectionConfig($environment);
+
+        foreach ($connectionConfig as $connection => $configs) {
+            $sshConn = $sshManager->connection($connection);
+
+            foreach ($configs as $config) {
+            }
+        }
+
 
         return $result;
     }
