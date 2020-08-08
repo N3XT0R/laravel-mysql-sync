@@ -98,7 +98,6 @@ class MySqlSyncServiceProvider extends ServiceProvider
     public function provides(): array
     {
         return [
-            Commands\MysqlSyncCommand::class,
             SyncService::class
         ];
     }
