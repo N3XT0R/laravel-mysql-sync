@@ -18,7 +18,7 @@ class MysqlSyncCommand extends Command
     {
         $exitCode = 0;
         if ($this->confirmToProceed()) {
-            $environment = $this->argument('environment');
+            $environment = $this->option('environment');
             /**
              * @var SyncService $syncService
              */
