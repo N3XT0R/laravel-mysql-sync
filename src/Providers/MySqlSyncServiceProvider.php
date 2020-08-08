@@ -12,6 +12,8 @@ use N3XT0R\MysqlSync\SyncService;
 
 class MySqlSyncServiceProvider extends ServiceProvider
 {
+    protected $defer = true;
+
     /**
      * Bootstrap services.
      *
@@ -87,5 +89,18 @@ class MySqlSyncServiceProvider extends ServiceProvider
                 ]
             );
         }
+    }
+
+    /**
+     * Get the services provided by the provider.
+     *
+     * @return array
+     */
+    public function provides(): array
+    {
+        return [
+            Commands\MysqlSyncCommand::class,
+            SyncService::class
+        ];
     }
 }
