@@ -1,6 +1,5 @@
 <?php
 
-
 return [
     /*
     |--------------------------------------------------------------------------
@@ -12,7 +11,6 @@ return [
     | in the server list. Each connection will be manually accessible.
     |
     */
-
     'default' => env('DEFAULT_REMOTE_CONNECTION', 'production'),
 
     /*
@@ -25,7 +23,6 @@ return [
     | tasks on your servers, such as deploying out these applications.
     |
     */
-
     'connections' => [
         'production' => [
             'host' => '',
@@ -36,6 +33,12 @@ return [
             'keyphrase' => '',
             'agent' => '',
             'timeout' => 10,
+            'mysql-config' => [
+                'host' => '',
+                'user' => '',
+                'password' => '',
+                'database' => '',
+            ],
         ],
     ],
 
@@ -49,7 +52,6 @@ return [
     | that is extremely easy to remember, such as "web" or "database".
     |
     */
-
     'groups' => [
         'web' => ['production'],
     ],

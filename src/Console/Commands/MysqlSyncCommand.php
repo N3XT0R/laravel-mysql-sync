@@ -5,7 +5,6 @@ namespace N3XT0R\MySqlSync\Console\Commands;
 use Illuminate\Console\Command;
 use Illuminate\Console\ConfirmableTrait;
 use Illuminate\Database\ConnectionResolverInterface as Resolver;
-use N3XT0R\MysqlSync\Seeder\DatabaseSeeder;
 use Symfony\Component\Console\Input\InputOption;
 
 class MysqlSyncCommand extends Command
@@ -43,31 +42,12 @@ class MysqlSyncCommand extends Command
         return $this->resolver;
     }
 
-    public function handle(): void
+    public function handle(): int
     {
-        if (!$this->confirmToProceed()) {
-            return;
+        $exitCode = 0;
+        if ($this->confirmToProceed()) {
         }
-
-        $defaultConnection = $this->getResolver()->getDefaultConnection();
-        $seeder = $this->getSeeder();
-        $seeder->getResolver()->getDefaultConnection();
-    }
-
-    /**
-     * Get a seeder instance from the container.
-     *
-     * @return DatabaseSeeder
-     */
-    protected function getSeeder(): DatabaseSeeder
-    {
-        /**
-         * @var DatabaseSeeder $class
-         */
-        $class = $this->laravel->make(DatabaseSeeder::class);
-        $class->setCommand($this)->setResolver($this->getResolver());
-
-        return $class;
+        return $exitCode;
     }
 
     /**
