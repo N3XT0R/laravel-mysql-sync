@@ -33,15 +33,26 @@ return [
             'keyphrase' => '',
             'agent' => '',
             'timeout' => 10,
-            'mysql-config' => [
-                'host' => '',
-                'user' => '',
-                'password' => '',
-                'database' => '',
-            ],
         ],
     ],
 
+    /*
+        |--------------------------------------------------------------------------
+        | Remote Server Databases
+        |--------------------------------------------------------------------------
+        |
+        | These are the databases that will be accessible for syncing.
+        |
+        */
+    'databases' => [
+        [
+            'connection' => 'production',
+            'host' => 'localhost',
+            'database' => 'homestead',
+            'user' => 'root',
+            'password' => '',
+        ],
+    ],
     /*
     |--------------------------------------------------------------------------
     | Remote Server Groups
