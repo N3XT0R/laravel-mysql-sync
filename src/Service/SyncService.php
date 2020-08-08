@@ -10,9 +10,10 @@ class SyncService
 
     protected $sshManager;
     protected $config;
+    protected $storagePath = '';
 
 
-    public function __construct(RemoteManager $sshManager, Repository $config)
+    public function __construct(RemoteManager $sshManager, Repository $config, string $storagePath)
     {
         $this->setSshManager($sshManager);
         $this->setConfig($config);
@@ -50,6 +51,22 @@ class SyncService
         $this->config = $config;
     }
 
+    /**
+     * @return string
+     */
+    public function getStoragePath(): string
+    {
+        return $this->storagePath;
+    }
+
+    /**
+     * @param string $storagePath
+     */
+    public function setStoragePath(string $storagePath): void
+    {
+        $this->storagePath = $storagePath;
+    }
+
     protected function getPreparedConnectionConfig(string $environment): array
     {
         $preparedConfig = [];
@@ -79,15 +96,18 @@ class SyncService
         $result = false;
         $sshManager = $this->getSshManager();
         $connectionConfig = $this->getPreparedConnectionConfig($environment);
+        $storagePath = $this->getStoragePath();
 
         foreach ($connectionConfig as $connection => $configs) {
             $sshConn = $sshManager->connection($connection);
 
             foreach ($configs as $config) {
-                $tmpName = '/tmp/' . $config['db'] . '_' . date('d_m_y_h_i_s') . '.sql';
+                $tmpName = $config['db'] . '_' . date('d_m_y_h_i_s') . '.sql';
+                $remotePath = '/tmp/' . $tmpName;
                 $sshConn->run([
-                    "mysqldump -h{$config['host']} -u{$config['user']} -p{$config['password']} {$config['db']} |  sed -e 's/DEFINER[ ]*=[ ]*[^*]*\*/\*/' > " . $tmpName
+                    "mysqldump -h{$config['host']} -u{$config['user']} -p{$config['password']} {$config['db']} | sed -e 's/DEFINER[ ]*=[ ]*[^*]*\*/\*/' > " . $remotePath
                 ]);
+                $sshConn->get($remotePath, $storagePath . DIRECTORY_SEPARATOR . $tmpName);
             }
         }
 
