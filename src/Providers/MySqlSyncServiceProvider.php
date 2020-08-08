@@ -45,6 +45,7 @@ class MySqlSyncServiceProvider extends ServiceProvider
     {
         $this->app->register(RemoteServiceProvider::class);
         $this->app->alias('SSH', RemoteFacade::class);
+        $this->mergeConfigFrom(__DIR__ . '/../Config/sync-config.php', 'remote');
     }
 
     protected function bootCommand(): void
