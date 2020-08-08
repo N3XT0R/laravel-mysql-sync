@@ -84,6 +84,10 @@ class SyncService
             $sshConn = $sshManager->connection($connection);
 
             foreach ($configs as $config) {
+                $tmpName = '/tmp/' . $config['db'] . '_' . date('d_m_y_h_i_s') . '.sql';
+                $sshConn->run([
+                    "mysqldump -h -u -p |  sed -e 's/DEFINER[ ]*=[ ]*[^*]*\*/\*/' > " . $tmpName
+                ]);
             }
         }
 
