@@ -71,8 +71,8 @@ class MySqlSyncServiceProvider extends ServiceProvider
          * @var \Illuminate\Config\Repository $config
          */
         $config = $this->app->get('config');
-        $connections = $config->get('remote.connections');
-        $syncConnections = $config->get('mysql-sync.connections');
+        $connections = $config->get('remote.connections', []);
+        $syncConnections = $config->get('mysql-sync.connections', []);
         $mergedConnections = array_replace_recursive($connections, $syncConnections);
         $config->set('remote.connections', $mergedConnections);
     }
