@@ -37,13 +37,13 @@ return [
     ],
 
     /*
-        |--------------------------------------------------------------------------
-        | Remote Server Databases
-        |--------------------------------------------------------------------------
-        |
-        | These are the databases that will be accessible for syncing.
-        |
-        */
+    |--------------------------------------------------------------------------
+    | Remote Server Databases
+    |--------------------------------------------------------------------------
+    |
+    | These are the databases that will be accessible for syncing.
+    |
+    */
     'databases' => [
         [
             'connection' => 'production',
