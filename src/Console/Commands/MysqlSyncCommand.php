@@ -11,7 +11,7 @@ class MysqlSyncCommand extends Command
 {
     use ConfirmableTrait;
 
-    protected $signature = 'db:sync';
+    protected $signature = 'db:sync {environment}';
 
     /**
      * The connection resolver instance.
@@ -46,6 +46,7 @@ class MysqlSyncCommand extends Command
     {
         $exitCode = 0;
         if ($this->confirmToProceed()) {
+            $environment = $this->argument('environment');
         }
         return $exitCode;
     }
