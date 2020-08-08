@@ -144,7 +144,9 @@ class SyncService
         $sshConn->get($remotePath, $localPath);
 
         if ($adapter->has($localPath) &&
-            true === DB::connection()->statement('DROP DATABASE IF EXISTS  `' . $config['database'] . '`; CREATE DATABASE `' . $config['db'] . '`;')) {
+            true === DB::connection()->statement(
+                'DROP DATABASE IF EXISTS  `' . $config['database'] . '`; CREATE DATABASE `' . $config['database'] . '`;'
+            )) {
             $importProcess = new Process([
                 'mysql',
                 '-h' . $dbDefaultConfig['host'],
