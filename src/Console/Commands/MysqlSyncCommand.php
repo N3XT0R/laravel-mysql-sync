@@ -4,6 +4,7 @@ namespace N3XT0R\MySqlSync\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Console\ConfirmableTrait;
+use Illuminate\Support\Facades\App;
 use N3XT0R\MySqlSync\Service\SyncService;
 use Symfony\Component\Console\Input\InputOption;
 
@@ -17,7 +18,10 @@ class MysqlSyncCommand extends Command
     public function handle(): int
     {
         $exitCode = 0;
-        if ($this->confirmToProceed()) {
+        $run = ('production' === App::environment() && true === $this->confirmToProceed())
+            || 'production' !== App::environment();
+
+        if (true === $run) {
             $environment = (string)$this->option('environment');
             /**
              * @var SyncService $syncService
