@@ -58,7 +58,7 @@ class MySqlSyncServiceProvider extends ServiceProvider
                  * @var \Illuminate\Config\Repository $config
                  */
                 $config = $app->get('config');
-                return new SyncService($remote, $config, $app->get('path.storage'));
+                return new SyncService($remote, $config, $app->get('mysql-sync.storage'));
             }
         );
     }

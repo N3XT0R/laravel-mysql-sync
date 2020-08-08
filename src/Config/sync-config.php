@@ -68,4 +68,5 @@ return [
             ],
         ],
     ],
+    'storage' => storage_path(),
 ];
