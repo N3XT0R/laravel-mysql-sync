@@ -1,6 +1,6 @@
 <?php
 
-namespace N3XT0R\MySqlSync;
+namespace N3XT0R\MySqlSync\Service;
 
 use Collective\Remote\ConnectionInterface;
 use Collective\Remote\RemoteManager;
