@@ -77,7 +77,7 @@ class SyncService
     {
         $preparedConfig = [];
         $config = $this->getConfig();
-        $databases = $config->get('mysql-sync.environments.' . $environment . '.databases');
+        $databases = $config->get('mysql-sync.environments.' . $environment . '.databases', []);
 
         foreach ($databases as $database) {
             $dbConfig = $config->get('mysql-sync.databases.' . $database);
