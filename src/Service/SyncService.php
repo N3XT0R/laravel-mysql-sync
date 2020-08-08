@@ -134,17 +134,17 @@ class SyncService
         if ($adapter->has('dumps')) {
             $adapter->createDir('dumps');
         }
-        $tmpName = $config['db'] . '_' . date('d_m_y_h_i_s') . '.sql';
+        $tmpName = $config['database'] . '_' . date('d_m_y_h_i_s') . '.sql';
         $remotePath = '/tmp/' . $tmpName;
         $localPath = $storagePath . DIRECTORY_SEPARATOR . 'dumps' . DIRECTORY_SEPARATOR . $tmpName;
 
         $sshConn->run([
-            "mysqldump -h{$config['host']} -u{$config['user']} -p{$config['password']} {$config['db']} | sed -e 's/DEFINER[ ]*=[ ]*[^*]*\*/\*/' > " . $remotePath
+            "mysqldump -h{$config['host']} -u{$config['user']} -p{$config['password']} {$config['database']} | sed -e 's/DEFINER[ ]*=[ ]*[^*]*\*/\*/' > " . $remotePath
         ]);
         $sshConn->get($remotePath, $localPath);
 
         if ($adapter->has($localPath) &&
-            true === DB::connection()->statement('DROP DATABASE IF EXISTS  `' . $config['db'] . '`; CREATE DATABASE `' . $config['db'] . '`;')) {
+            true === DB::connection()->statement('DROP DATABASE IF EXISTS  `' . $config['database'] . '`; CREATE DATABASE `' . $config['db'] . '`;')) {
             $importProcess = new Process([
                 'mysql',
                 '-h' . $dbDefaultConfig['host'],
