@@ -123,8 +123,8 @@ class SyncService
     {
         $result = false;
         $storagePath = $this->getStoragePath();
-        $dbNameDefault = $this->getConfig()->get(
-            'database.connections.' . $this->getConfig()->get('database.default') . 'database'
+        $dbDefaultConfig = $this->getConfig()->get(
+            'database.connections.' . $this->getConfig()->get('database.default')
         );
         /**
          * @var FilesystemManager $filesystem
@@ -144,10 +144,15 @@ class SyncService
         $sshConn->get($remotePath, $localPath);
 
         if ($adapter->has($localPath) &&
-            true === DB::connection()->statement('DROP DATABASE `' . $dbNameDefault . '`; CREATE DATABASE `' . $dbNameDefault . '`;')) {
+            true === DB::connection()->statement('DROP DATABASE `' . $dbDefaultConfig['database'] . '`; CREATE DATABASE `' . $dbDefaultConfig['database'] . '`;')) {
             $importProcess = new Process([
                 'mysql',
-                '-u'
+                '-h' . $dbDefaultConfig['host'],
+                '-u' . $dbDefaultConfig['username'],
+                '-p' . $dbDefaultConfig['password'],
+                $dbDefaultConfig['database'],
+                '<',
+                $localPath
             ]);
 
             $result = 0 === $importProcess->run();
