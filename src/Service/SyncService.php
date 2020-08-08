@@ -137,7 +137,7 @@ class SyncService
         }
         $tmpName = $config['database'] . '_' . date('d_m_y_h_i_s') . '.sql';
         $remotePath = '/tmp/' . $tmpName;
-        $localPath = $storagePath . DIRECTORY_SEPARATOR . $tmpName;
+        $localPath = $storagePath . DIRECTORY_SEPARATOR . 'dumps' . DIRECTORY_SEPARATOR . $tmpName;
 
         $sshConn->run(
             [
