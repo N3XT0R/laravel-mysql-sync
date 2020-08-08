@@ -11,7 +11,7 @@ class MysqlSyncCommand extends Command
 {
     use ConfirmableTrait;
 
-    protected $signature = 'db:sync {environment}';
+    protected $signature = 'db:sync';
 
 
     public function handle(): int
@@ -38,7 +38,7 @@ class MysqlSyncCommand extends Command
     protected function getOptions(): array
     {
         return [
-            ['environment', null, InputOption::VALUE_OPTIONAL, 'The environment to sync e.g. production'],
+            ['environment', null, InputOption::VALUE_REQUIRED, 'The environment to sync e.g. production'],
         ];
     }
 }
