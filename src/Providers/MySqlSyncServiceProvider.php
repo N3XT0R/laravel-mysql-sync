@@ -82,7 +82,6 @@ class MySqlSyncServiceProvider extends ServiceProvider
     protected function bootCommand(): void
     {
         if ($this->app->runningInConsole()) {
-            $this->app->singleton(Commands\MysqlSyncCommand::class, Commands\MysqlSyncCommand::class);
             $this->commands(
                 [
                     Commands\MysqlSyncCommand::class,
