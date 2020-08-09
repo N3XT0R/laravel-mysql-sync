@@ -73,7 +73,7 @@ return [
             'user' => 'root',
             'password' => 'myPassword',
         ],
-        'seconddOptionalDb' => [
+        'secondOptionalDb' => [
             'connection' => 'production',
             'host' => 'mysql.example.com',
             'database' => 'customerDb',
@@ -89,7 +89,7 @@ return [
             */
             'databases' => [
                 'laravel',
-                'seconddOptionalDb',
+                'secondOptionalDb',
             ],
         ],
     ],
