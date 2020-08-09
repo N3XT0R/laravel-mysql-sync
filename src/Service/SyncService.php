@@ -166,18 +166,21 @@ class SyncService
             $this->getOutput()->writeln('dumping database ' . $config['database'] . ' started');
         }
 
-        $sshConn->run(
+        $this->runSSHCommand(
+            $sshConn,
             [
                 "mysqldump -h{$config['host']} -u{$config['user']} -p{$config['password']} {$config['database']} | sed -e 's/DEFINER[ ]*=[ ]*[^*]*\*/\*/' > " . $remotePath
-            ],
-            function (string $line) {
-                if ($this->hasOutput()) {
-                    $output = $this->getOutput();
-                    $output->writeln($line);
-                }
-            }
+            ]
         );
+
         $sshConn->get($remotePath, $localPath);
+
+        $this->runSSHCommand(
+            $sshConn,
+            [
+                'rm -f ' . $remotePath
+            ]
+        );
 
         if ($adapter->has($localPath) &&
             true === DB::connection()->statement(
@@ -212,4 +215,16 @@ class SyncService
         return $result;
     }
 
+    protected function runSSHCommand(ConnectionInterface $sshConn, array $commands): void
+    {
+        $sshConn->run(
+            $commands,
+            function (string $line) {
+                if ($this->hasOutput()) {
+                    $output = $this->getOutput();
+                    $output->writeln($line);
+                }
+            }
+        );
+    }
 }
