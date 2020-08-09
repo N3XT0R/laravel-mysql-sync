@@ -3,18 +3,6 @@
 return [
     /*
     |--------------------------------------------------------------------------
-    | Default Remote Connection Name
-    |--------------------------------------------------------------------------
-    |
-    | Here you may specify the default connection that will be used for SSH
-    | operations. This name should correspond to a connection name below
-    | in the server list. Each connection will be manually accessible.
-    |
-    */
-    'default' => env('DEFAULT_REMOTE_CONNECTION', 'production'),
-
-    /*
-    |--------------------------------------------------------------------------
     | Remote Server Connections
     |--------------------------------------------------------------------------
     |
