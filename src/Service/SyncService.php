@@ -162,7 +162,9 @@ class SyncService
         }
         $tmpName = $config['database'] . '_' . date('YmdHis') . '.sql';
         $config['remotePath'] = '/tmp/' . $tmpName;
-        $config['localPath'] = $storagePath . DIRECTORY_SEPARATOR . 'dumps' . DIRECTORY_SEPARATOR . $tmpName;
+        $config['relativeLocalPath'] = 'dumps' . DIRECTORY_SEPARATOR . $tmpName;
+        $config['localPath'] = $storagePath . DIRECTORY_SEPARATOR . $config['relativeLocalPath'];
+
 
         $isDumped = $this->createMySqlDumpByConfig($sshConn, $config, $adapter);
 
@@ -204,7 +206,7 @@ class SyncService
             $this->getOutput()->writeln('dumping database ' . $config['database'] . ' finished');
         }
 
-        return $filesystem->exists($config['localPath']);
+        return $filesystem->exists($config['relativeLocalPath']);
     }
 
     public function importDatabase(array $dbDefaultConfig, array $config): bool
