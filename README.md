@@ -85,7 +85,7 @@ return [
         'production' => [
             /**
             * be careful, this is the same order like on importing databases
-            * when you have constraints between database, set them on correct order.
+            * when you have constraints between database, set them to correct order.
             */
             'databases' => [
                 'laravel',
