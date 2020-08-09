@@ -5,6 +5,7 @@ namespace N3XT0R\MySqlSync\Service;
 use Collective\Remote\ConnectionInterface;
 use Collective\Remote\RemoteManager;
 use Illuminate\Config\Repository;
+use Illuminate\Contracts\Filesystem\Filesystem;
 use Illuminate\Filesystem\FilesystemManager;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -159,9 +160,24 @@ class SyncService
             $adapter->createDir('dumps');
         }
         $tmpName = $config['database'] . '_' . date('YmdHis') . '.sql';
-        $remotePath = '/tmp/' . $tmpName;
-        $localPath = $storagePath . DIRECTORY_SEPARATOR . 'dumps' . DIRECTORY_SEPARATOR . $tmpName;
+        $config['remotePath'] = '/tmp/' . $tmpName;
+        $config['localPath'] = $storagePath . DIRECTORY_SEPARATOR . 'dumps' . DIRECTORY_SEPARATOR . $tmpName;
 
+        $isDumped = $this->createMySqlDumpByConfig($sshConn, $config, $adapter);
+
+        if (true === $isDumped) {
+            $result = $this->importDatabase($dbDefaultConfig, $config);
+        }
+
+        return $result;
+    }
+
+
+    public function createMySqlDumpByConfig(
+        ConnectionInterface $sshConn,
+        array $config,
+        Filesystem $filesystem
+    ): bool {
         if ($this->hasOutput()) {
             $this->getOutput()->writeln('dumping database ' . $config['database'] . ' started');
         }
@@ -169,16 +185,17 @@ class SyncService
         $this->runSSHCommand(
             $sshConn,
             [
-                "mysqldump -h{$config['host']} -u{$config['user']} -p{$config['password']} {$config['database']} | sed -e 's/DEFINER[ ]*=[ ]*[^*]*\*/\*/' > " . $remotePath
+                "mysqldump -h{$config['host']} -u{$config['user']} -p{$config['password']} {$config['database']} " .
+                "| sed -e 's/DEFINER[ ]*=[ ]*[^*]*\*/\*/' > " . $config['remotePath']
             ]
         );
 
-        $sshConn->get($remotePath, $localPath);
+        $sshConn->get($config['remotePath'], $config['localPath']);
 
         $this->runSSHCommand(
             $sshConn,
             [
-                'rm -f ' . $remotePath
+                'rm -f ' . $config['remotePath']
             ]
         );
 
@@ -186,8 +203,13 @@ class SyncService
             $this->getOutput()->writeln('dumping database ' . $config['database'] . ' finished');
         }
 
-        if ($adapter->has($localPath) &&
-            true === DB::connection()->unprepared(
+        return $filesystem->exists($config['localPath']);
+    }
+
+    public function importDatabase(array $dbDefaultConfig, array $config): bool
+    {
+        $result = false;
+        if (true === DB::connection()->unprepared(
                 'DROP DATABASE IF EXISTS  `' . $config['database'] . '`; CREATE DATABASE `' . $config['database'] . '`;'
             )) {
             if ($this->hasOutput()) {
@@ -200,7 +222,7 @@ class SyncService
                 '-p' . $dbDefaultConfig['password'],
                 $dbDefaultConfig['database'],
                 '<',
-                $localPath
+                $config['localPath']
             ]);
 
             $result = 0 === $importProcess->run();
