@@ -8,6 +8,7 @@ use Illuminate\Config\Repository;
 use Illuminate\Filesystem\FilesystemManager;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Process\Process;
 
 class SyncService
@@ -16,6 +17,7 @@ class SyncService
     protected $sshManager;
     protected $config;
     protected $storagePath = '';
+    protected $output;
 
 
     public function __construct(RemoteManager $sshManager, Repository $config, string $storagePath)
@@ -73,6 +75,28 @@ class SyncService
         $this->storagePath = $storagePath;
     }
 
+    /**
+     * @return OutputInterface
+     */
+    public function getOutput(): OutputInterface
+    {
+        return $this->output;
+    }
+
+    /**
+     * @param OutputInterface $output
+     */
+    public function setOutput(OutputInterface $output): void
+    {
+        $this->output = $output;
+    }
+
+    public function hasOutput(): bool
+    {
+        return null !== $this->output;
+    }
+
+
     protected function getPreparedConnectionConfig(string $environment): array
     {
         $preparedConfig = [];
@@ -121,7 +145,6 @@ class SyncService
 
     protected function runDatabaseCopy(ConnectionInterface $sshConn, array $config): bool
     {
-        $log = [];
         $result = false;
         $storagePath = $this->getStoragePath();
         $dbDefaultConfig = $this->getConfig()->get(
@@ -139,12 +162,19 @@ class SyncService
         $remotePath = '/tmp/' . $tmpName;
         $localPath = $storagePath . DIRECTORY_SEPARATOR . 'dumps' . DIRECTORY_SEPARATOR . $tmpName;
 
+        if ($this->hasOutput()) {
+            $this->getOutput()->writeln('dumping database ' . $config['database'] . ' started');
+        }
+
         $sshConn->run(
             [
                 "mysqldump -h{$config['host']} -u{$config['user']} -p{$config['password']} {$config['database']} | sed -e 's/DEFINER[ ]*=[ ]*[^*]*\*/\*/' > " . $remotePath
             ],
-            static function (string $line) use (&$log) {
-                $log[] = $line;
+            function (string $line) {
+                if ($this->hasOutput()) {
+                    $output = $this->getOutput();
+                    $output->writeln($line);
+                }
             }
         );
         $sshConn->get($remotePath, $localPath);
@@ -153,6 +183,9 @@ class SyncService
             true === DB::connection()->statement(
                 'DROP DATABASE IF EXISTS  `' . $config['database'] . '`; CREATE DATABASE `' . $config['database'] . '`;'
             )) {
+            if ($this->hasOutput()) {
+                $this->getOutput()->writeln('start importing database ' . $config['database']);
+            }
             $importProcess = new Process([
                 'mysql',
                 '-h' . $dbDefaultConfig['host'],
@@ -164,6 +197,16 @@ class SyncService
             ]);
 
             $result = 0 === $importProcess->run();
+
+            if ($this->hasOutput()) {
+                if (true === $result) {
+                    $message = 'importing database finished successfully';
+                } else {
+                    $message = 'importing database failed.';
+                }
+
+                $this->getOutput()->writeln($message);
+            }
         }
 
         return $result;

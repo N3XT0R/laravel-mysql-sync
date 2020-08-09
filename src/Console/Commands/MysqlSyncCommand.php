@@ -18,6 +18,7 @@ class MysqlSyncCommand extends Command
     public function handle(): int
     {
         $exitCode = 0;
+        $output = $this->getOutput();
         $run = 'production' !== App::environment();
         if (false === $run) {
             $run = $this->confirmToProceed();
@@ -29,6 +30,7 @@ class MysqlSyncCommand extends Command
              * @var SyncService $syncService
              */
             $syncService = $this->getLaravel()->get(SyncService::class);
+            $syncService->setOutput($output);
             if (false === $syncService->sync($environment)) {
                 $exitCode = 1;
             }
