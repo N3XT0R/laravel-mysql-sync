@@ -219,17 +219,14 @@ class SyncService
             if (true === $hasOutput) {
                 $this->getOutput()->writeln('start importing database ' . $config['database']);
             }
-            $importProcess = new Process([
-                'mysql',
-                '-h' . $dbDefaultConfig['host'],
-                '-u' . $dbDefaultConfig['username'],
-                '-p' . $dbDefaultConfig['password'],
-                $config['database'],
-                '<',
+            $importProcess = new Process(
+                'mysql -h' . $dbDefaultConfig['host'] . ' -u' . $dbDefaultConfig['username'] .
+                ' -p' . $dbDefaultConfig['password'] . ' ' . $config['database'] .
+                ' < ' .
                 $config['localPath']
-            ]);
+            );
 
-            $result = 0 === $importProcess->run();
+            $result = 0 === $importProcess->run() && 0 === $importProcess->wait();
 
             if (true === $hasOutput) {
                 if (true === $result) {
