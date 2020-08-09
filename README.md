@@ -1,4 +1,4 @@
-# laravel-mysql-sync
+# laravel-mysql-sync [Laravel/Lumen 5.x /6]
 
 This Tool allows Laravel/Lumen Developers to syncing mysql databases to the local environment from any configured
 environment like staging or production systems.
