@@ -182,6 +182,10 @@ class SyncService
             ]
         );
 
+        if ($this->hasOutput()) {
+            $this->getOutput()->writeln('dumping database ' . $config['database'] . ' finished');
+        }
+
         if ($adapter->has($localPath) &&
             true === DB::connection()->unprepared(
                 'DROP DATABASE IF EXISTS  `' . $config['database'] . '`; CREATE DATABASE `' . $config['database'] . '`;'
