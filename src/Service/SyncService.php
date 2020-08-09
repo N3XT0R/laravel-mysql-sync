@@ -183,7 +183,7 @@ class SyncService
         );
 
         if ($adapter->has($localPath) &&
-            true === DB::connection()->statement(
+            true === DB::connection()->unprepared(
                 'DROP DATABASE IF EXISTS  `' . $config['database'] . '`; CREATE DATABASE `' . $config['database'] . '`;'
             )) {
             if ($this->hasOutput()) {
