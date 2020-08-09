@@ -219,6 +219,10 @@ class SyncService
             if (true === $hasOutput) {
                 $this->getOutput()->writeln('start importing database ' . $config['database']);
             }
+            /**
+             * give command as string not array into process,
+             * because array will be handled with exec command. exec crashes the import.
+             */
             $importProcess = new Process(
                 'mysql -h' . $dbDefaultConfig['host'] . ' -u' . $dbDefaultConfig['username'] .
                 ' -p' . $dbDefaultConfig['password'] . ' ' . $config['database'] .
