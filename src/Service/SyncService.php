@@ -188,7 +188,7 @@ class SyncService
         $this->runSSHCommand(
             $sshConn,
             [
-                "mysqldump -h{$config['host']} -u{$config['user']} -p{$config['password']} {$config['database']} " .
+                "mysqldump --routines --triggers -h{$config['host']} -u{$config['user']} -p{$config['password']} {$config['database']} " .
                 "| sed -e 's/DEFINER[ ]*=[ ]*[^*]*\*/\*/' > " . $config['remotePath']
             ]
         );
