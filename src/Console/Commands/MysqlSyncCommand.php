@@ -25,7 +25,7 @@ class MysqlSyncCommand extends Command
         }
 
         if (true === $run) {
-            $environment = (string)$this->option('connection');
+            $environment = (string)$this->option('stage');
             /**
              * @var SyncService $syncService
              */
@@ -35,7 +35,7 @@ class MysqlSyncCommand extends Command
                 $exitCode = 1;
             }
         }
-        
+
         return $exitCode;
     }
 
@@ -47,7 +47,7 @@ class MysqlSyncCommand extends Command
     protected function getOptions(): array
     {
         return [
-            ['connection', null, InputOption::VALUE_REQUIRED, 'The environment to sync e.g. production'],
+            ['stage', null, InputOption::VALUE_REQUIRED, 'The environment to sync e.g. production'],
             ['force', null, InputOption::VALUE_NONE, 'Force the operation to run when in production'],
         ];
     }

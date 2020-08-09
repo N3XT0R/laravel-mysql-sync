@@ -104,5 +104,5 @@ return [
 ## Execute syncing
 
 ```shell script
-php artisan db:sync --connection=production
+php artisan db:sync --stage=production
 ```
