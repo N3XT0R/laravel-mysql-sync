@@ -223,7 +223,11 @@ class SyncService
                 'mysql -h' . $dbDefaultConfig['host'] . ' -u' . $dbDefaultConfig['username'] .
                 ' -p' . $dbDefaultConfig['password'] . ' ' . $config['database'] .
                 ' < ' .
-                $config['localPath']
+                $config['localPath'],
+                null,
+                null,
+                null,
+                (60 * 60)
             );
 
             $result = 0 === $importProcess->run() && 0 === $importProcess->wait();
