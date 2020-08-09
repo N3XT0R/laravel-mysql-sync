@@ -1,4 +1,9 @@
 # laravel-mysql-sync [Laravel/Lumen 5.x /6]
+[![Build Status](https://travis-ci.com/N3XT0R/laravel-mysql-sync.svg?branch=master)](https://travis-ci.com/N3XT0R/laravel-mysql-sync)
+[![Latest Stable Version](https://poser.pugx.org/n3xt0r/laravel-mysql-sync/v/stable)](https://packagist.org/packages/n3xt0r/laravel-mysql-sync)
+[![Test Coverage](https://api.codeclimate.com/v1/badges/be9371bdba5452633a79/test_coverage)](https://codeclimate.com/github/N3XT0R/laravel-mysql-sync/test_coverage)
+[![Maintainability](https://api.codeclimate.com/v1/badges/be9371bdba5452633a79/maintainability)](https://codeclimate.com/github/N3XT0R/laravel-mysql-sync/maintainability)
+[![License](https://poser.pugx.org/n3xt0r/laravel-mysql-sync/license)](https://packagist.org/packages/n3xt0r/laravel-mysql-sync)
 
 This Tool allows Laravel/Lumen Developers to syncing mysql databases to the local environment from any configured
 environment like staging or production systems.
