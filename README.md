@@ -3,6 +3,11 @@
 This Tool allows Laravel/Lumen Developers to syncing mysql databases to the local environment from any configured
 environment like staging or production systems.
 
+## Requirements
+
+- mysqldump on remote machines
+- mysql-client on local machine
+
 ## Installation
 
 ```shell script
