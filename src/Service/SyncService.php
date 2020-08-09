@@ -224,7 +224,7 @@ class SyncService
                 '-h' . $dbDefaultConfig['host'],
                 '-u' . $dbDefaultConfig['username'],
                 '-p' . $dbDefaultConfig['password'],
-                $dbDefaultConfig['database'],
+                $config['database'],
                 '<',
                 $config['localPath']
             ]);
