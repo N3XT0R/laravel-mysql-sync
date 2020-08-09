@@ -5,8 +5,11 @@ environment like staging or production systems.
 
 ## Requirements
 
-- mysqldump on remote machines
-- mysql-client on local machine
+### Remote
+    - mysqldump
+    - openssh
+### Local
+    - mysql-client
 
 ## Installation
 
