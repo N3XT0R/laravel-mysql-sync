@@ -208,11 +208,12 @@ class SyncService
 
     public function importDatabase(array $dbDefaultConfig, array $config): bool
     {
+        $hasOutput = $this->hasOutput();
         $result = false;
         if (true === DB::connection()->unprepared(
                 'DROP DATABASE IF EXISTS  `' . $config['database'] . '`; CREATE DATABASE `' . $config['database'] . '`;'
             )) {
-            if ($this->hasOutput()) {
+            if (true === $hasOutput) {
                 $this->getOutput()->writeln('start importing database ' . $config['database']);
             }
             $importProcess = new Process([
@@ -227,7 +228,7 @@ class SyncService
 
             $result = 0 === $importProcess->run();
 
-            if ($this->hasOutput()) {
+            if (true === $hasOutput) {
                 if (true === $result) {
                     $message = 'importing database finished successfully';
                 } else {
@@ -236,6 +237,9 @@ class SyncService
 
                 $this->getOutput()->writeln($message);
             }
+        } elseif (true === $hasOutput) {
+            $this->getOutput()->writeln('recreating database ' . $config['database'] . ' failed. 
+                Try to import ' . $config['localPath'] . ' manually!');
         }
 
         return $result;
