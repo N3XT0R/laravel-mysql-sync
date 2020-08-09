@@ -235,7 +235,7 @@ class SyncService
                 if (true === $result) {
                     $message = 'importing database finished successfully';
                 } else {
-                    $message = 'importing database failed.';
+                    $message = $importProcess->getErrorOutput();
                 }
 
                 $this->getOutput()->writeln($message);
