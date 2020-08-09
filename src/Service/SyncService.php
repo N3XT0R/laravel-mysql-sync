@@ -158,6 +158,7 @@ class SyncService
         $adapter = $filesystem->createLocalDriver(['root' => $storagePath]);
         if (false === $adapter->has('dumps')) {
             $adapter->createDir('dumps');
+            $adapter->put('dumps/.gitignore', '*');
         }
         $tmpName = $config['database'] . '_' . date('YmdHis') . '.sql';
         $config['remotePath'] = '/tmp/' . $tmpName;
