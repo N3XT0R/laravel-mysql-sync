@@ -115,7 +115,7 @@ class SyncService
                 'database' => $dbConfig['database'],
                 'user' => $dbConfig['user'],
                 'password' => $dbConfig['password'],
-                'tmp_path' => $config->get('mysql-sync.tmp_path', '/tmp/'),
+                'tmp_path' => $config->get('mysql-sync.tmp_path', '/tmp') . DIRECTORY_SEPARATOR,
             ];
         }
 
