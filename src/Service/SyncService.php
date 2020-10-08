@@ -115,6 +115,7 @@ class SyncService
                 'database' => $dbConfig['database'],
                 'user' => $dbConfig['user'],
                 'password' => $dbConfig['password'],
+                'tmp_path' => $config->get('mysql-sync.tmp_path'),
             ];
         }
 
@@ -161,7 +162,7 @@ class SyncService
             $adapter->put('dumps/.gitignore', '*');
         }
         $tmpName = $config['database'] . '_' . date('YmdHis') . '.sql';
-        $config['remotePath'] = '/tmp/' . $tmpName;
+        $config['remotePath'] = $config['tmp_path'] . $tmpName;
         $config['relativeLocalPath'] = 'dumps' . DIRECTORY_SEPARATOR . $tmpName;
         $config['localPath'] = $storagePath . DIRECTORY_SEPARATOR . $config['relativeLocalPath'];
 

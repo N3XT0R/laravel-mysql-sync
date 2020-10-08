@@ -57,4 +57,5 @@ return [
         ],
     ],
     'storage' => '', //storage_path()
+    'tmp_path' => '/tmp/',
 ];
