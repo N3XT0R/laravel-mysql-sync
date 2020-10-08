@@ -137,6 +137,10 @@ class SyncService
                 if (false === $this->runDatabaseCopy($sshConn, $config)) {
                     $result = false;
                 }
+                /**
+                 * reconnect to prevent idle connection timeout.
+                 */
+                $sshConn = $sshManager->connection($connection);
             }
         }
 
