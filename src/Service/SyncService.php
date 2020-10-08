@@ -122,7 +122,7 @@ class SyncService
     }
 
 
-    public function sync(string $environment): bool
+    public function sync(string $environment, bool $useLocalDump = false): bool
     {
         $result = true;
         $sshManager = $this->getSshManager();
@@ -133,7 +133,7 @@ class SyncService
             $sshConn = $sshManager->connection($connection);
 
             foreach ($configs as $config) {
-                if (false === $this->runDatabaseCopy($sshConn, $config)) {
+                if (false === $this->runDatabaseCopy($sshConn, $config, $useLocalDump)) {
                     $result = false;
                 }
             }
@@ -144,7 +144,7 @@ class SyncService
     }
 
 
-    protected function runDatabaseCopy(ConnectionInterface $sshConn, array $config): bool
+    protected function runDatabaseCopy(ConnectionInterface $sshConn, array $config, bool $useLocalDump): bool
     {
         $result = false;
         $storagePath = $this->getStoragePath();
@@ -160,13 +160,30 @@ class SyncService
             $adapter->createDir('dumps');
             $adapter->put('dumps/.gitignore', '*');
         }
-        $tmpName = $config['database'] . '_' . date('YmdHis') . '.sql';
-        $config['remotePath'] = '/tmp/' . $tmpName;
-        $config['relativeLocalPath'] = 'dumps' . DIRECTORY_SEPARATOR . $tmpName;
-        $config['localPath'] = $storagePath . DIRECTORY_SEPARATOR . $config['relativeLocalPath'];
 
+        if (false === $useLocalDump) {
+            $tmpName = $config['database'] . '_' . date('YmdHis') . '.sql';
+            $config['remotePath'] = '/tmp/' . $tmpName;
+            $config['relativeLocalPath'] = 'dumps' . DIRECTORY_SEPARATOR . $tmpName;
+            $config['localPath'] = $storagePath . DIRECTORY_SEPARATOR . $config['relativeLocalPath'];
+            $isDumped = $this->createMySqlDumpByConfig($sshConn, $config, $adapter);
+        } else {
+            $tmpName = '';
+            $files = $filesystem->files();
+            $matchingFiles = preg_grep('/^' . $config['database'] . '_/', $files);
+            $lastTimeStamp = 0;
+            foreach ($matchingFiles as $file) {
+                $time = explode('_', $file)[1];
+                if ($lastTimeStamp < $time) {
+                    $tmpName = $file;
+                }
+            }
+            $config['remotePath'] = '/tmp/' . $tmpName;
+            $config['relativeLocalPath'] = 'dumps' . DIRECTORY_SEPARATOR . $tmpName;
+            $config['localPath'] = $storagePath . DIRECTORY_SEPARATOR . $config['relativeLocalPath'];
+            $isDumped = !empty($tmpName);
+        }
 
-        $isDumped = $this->createMySqlDumpByConfig($sshConn, $config, $adapter);
 
         if (true === $isDumped) {
             $result = $this->importDatabase($dbDefaultConfig, $config);

@@ -26,12 +26,13 @@ class MysqlSyncCommand extends Command
 
         if (true === $run) {
             $environment = (string)$this->option('stage');
+            $useLocalDump = (bool)$this->option('use-local-dump');
             /**
              * @var SyncService $syncService
              */
             $syncService = $this->getLaravel()->get(SyncService::class);
             $syncService->setOutput($output);
-            if (false === $syncService->sync($environment)) {
+            if (false === $syncService->sync($environment, $useLocalDump)) {
                 $exitCode = 1;
             }
         }
@@ -49,6 +50,7 @@ class MysqlSyncCommand extends Command
         return [
             ['stage', null, InputOption::VALUE_REQUIRED, 'The environment to sync e.g. production'],
             ['force', null, InputOption::VALUE_NONE, 'Force the operation to run when in production'],
+            ['use-local-dump', null, InputOption::VALUE_OPTIONAL, 'Use the latest existing local dump'],
         ];
     }
 }
