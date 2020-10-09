@@ -195,7 +195,7 @@ class SyncService
             [
                 "mysqldump --routines --triggers -h{$config['host']} -u{$config['user']} -p'{$config['password']}' {$config['database']} " .
                 "| sed -e 's/DEFINER[ ]*=[ ]*[^*]*\*/\*/' " .
-                "| gzip " . $config['remotePath']
+                "| gzip -9 " . $config['remotePath']
             ]
         );
 
