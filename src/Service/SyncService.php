@@ -140,10 +140,6 @@ class SyncService
                 /**
                  * reconnect to prevent idle connection timeout.
                  */
-                if ($sshConn->getGateway()) {
-                    $sshConn->getGateway()->getConnection()->disconnect();
-                    $sshConn->getGateway()->getConnection()->_connect();
-                }
                 $sshConn = $sshManager->connection($connection);
             }
         }
