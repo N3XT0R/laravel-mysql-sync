@@ -165,7 +165,7 @@ class SyncService
             $adapter->createDir('dumps');
             $adapter->put('dumps/.gitignore', '*');
         }
-        $tmpName = $config['database'] . '_' . date('YmdHis') . '.sql';
+        $tmpName = $config['database'] . '_' . date('YmdHis') . '.sql.gz';
         $config['remotePath'] = $config['tmp_path'] . $tmpName;
         $config['relativeLocalPath'] = 'dumps' . DIRECTORY_SEPARATOR . $tmpName;
         $config['localPath'] = $storagePath . DIRECTORY_SEPARATOR . $config['relativeLocalPath'];
@@ -194,7 +194,8 @@ class SyncService
             $sshConn,
             [
                 "mysqldump --routines --triggers -h{$config['host']} -u{$config['user']} -p'{$config['password']}' {$config['database']} " .
-                "| sed -e 's/DEFINER[ ]*=[ ]*[^*]*\*/\*/' > " . $config['remotePath']
+                "| sed -e 's/DEFINER[ ]*=[ ]*[^*]*\*/\*/' " .
+                "| gzip " . $config['remotePath']
             ]
         );
 
@@ -229,10 +230,10 @@ class SyncService
              * because array will be handled with exec command. exec crashes the import.
              */
             $importProcess = new Process(
-                'mysql -h' . $dbDefaultConfig['host'] . ' -u' . $dbDefaultConfig['username'] .
-                ' -p' . $dbDefaultConfig['password'] . ' ' . $config['database'] .
-                ' < ' .
-                $config['localPath'],
+                "zcat " . $config['localPath'] .
+                '| mysql -h' . $dbDefaultConfig['host'] . ' -u' . $dbDefaultConfig['username'] .
+                ' -p' . $dbDefaultConfig['password'] . ' ' . $config['database']
+                ,
                 null,
                 null,
                 null,
