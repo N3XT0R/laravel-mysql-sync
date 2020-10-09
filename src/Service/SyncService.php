@@ -126,7 +126,6 @@ class SyncService
     public function sync(string $environment): bool
     {
         $result = true;
-        $sshManager = $this->getSshManager();
         $connectionConfig = $this->getPreparedConnectionConfig($environment);
 
 
