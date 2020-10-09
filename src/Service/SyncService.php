@@ -273,13 +273,14 @@ class SyncService
                 }
             );
         } catch (\Throwable $e) {
-            app('log')->error($e->getMessage(), [
-                'exception' => $e,
-            ]);
-            $sshConnNew = $this->getSshManager()->connection($connectionName);
             if ($retryAmount !== 0) {
                 $retryAmount--;
+                $sshConnNew = $this->getSshManager()->connection($connectionName);
                 $this->runSSHCommand($connectionName, $sshConnNew, $commands, $retryAmount);
+            } else {
+                app('log')->error($e->getMessage(), [
+                    'exception' => $e,
+                ]);
             }
         }
     }
