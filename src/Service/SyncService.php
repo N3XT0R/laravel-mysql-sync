@@ -201,7 +201,8 @@ class SyncService
             $sshConn,
             [
                 'rm -f ' . $config['remotePath']
-            ]
+            ],
+            3
         );
 
         if ($this->hasOutput()) {
