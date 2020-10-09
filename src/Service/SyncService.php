@@ -142,6 +142,7 @@ class SyncService
                  */
                 if ($sshConn->getGateway()) {
                     $sshConn->getGateway()->getConnection()->disconnect();
+                    $sshConn->getGateway()->getConnection()->_connect();
                 }
                 $sshConn = $sshManager->connection($connection);
             }
