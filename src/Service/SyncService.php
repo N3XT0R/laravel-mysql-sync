@@ -261,14 +261,20 @@ class SyncService
 
     protected function runSSHCommand(ConnectionInterface $sshConn, array $commands): void
     {
-        $sshConn->run(
-            $commands,
-            function (string $line) {
-                if ($this->hasOutput()) {
-                    $output = $this->getOutput();
-                    $output->writeln($line);
+        try {
+            $sshConn->run(
+                $commands,
+                function (string $line) {
+                    if ($this->hasOutput()) {
+                        $output = $this->getOutput();
+                        $output->writeln($line);
+                    }
                 }
-            }
-        );
+            );
+        } catch (\Throwable $e) {
+            app('log')->error($e->getMessage(), [
+                'exception' => $e,
+            ]);
+        }
     }
 }
