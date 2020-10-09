@@ -180,7 +180,7 @@ class SyncService
         array $config,
         Filesystem $filesystem
     ): bool {
-        $sshConn = $sshManager->connection($connectionName);
+        $sshConn = $this->getSshManager()->connection($connectionName);
         if ($this->hasOutput()) {
             $this->getOutput()->writeln('dumping database ' . $config['database'] . ' started');
         }
