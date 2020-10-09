@@ -2,7 +2,7 @@
 
 namespace N3XT0R\MySqlSync\Service;
 
-use Collective\Remote\ConnectionInterface;
+use Collective\Remote\Connection;
 use Collective\Remote\RemoteManager;
 use Illuminate\Config\Repository;
 use Illuminate\Contracts\Filesystem\Filesystem;
@@ -131,16 +131,10 @@ class SyncService
 
 
         foreach ($connectionConfig as $connection => $configs) {
-            $sshConn = $sshManager->connection($connection);
-
             foreach ($configs as $config) {
-                if (false === $this->runDatabaseCopy($sshConn, $config)) {
+                if (false === $this->runDatabaseCopy($connection, $config)) {
                     $result = false;
                 }
-                /**
-                 * reconnect to prevent idle connection timeout.
-                 */
-                $sshConn = $sshManager->connection($connection);
             }
         }
 
@@ -149,7 +143,7 @@ class SyncService
     }
 
 
-    protected function runDatabaseCopy(ConnectionInterface $sshConn, array $config): bool
+    protected function runDatabaseCopy(string $connectionName, array $config): bool
     {
         $result = false;
         $storagePath = $this->getStoragePath();
@@ -171,7 +165,7 @@ class SyncService
         $config['localPath'] = $storagePath . DIRECTORY_SEPARATOR . $config['relativeLocalPath'];
 
 
-        $isDumped = $this->createMySqlDumpByConfig($sshConn, $config, $adapter);
+        $isDumped = $this->createMySqlDumpByConfig($connectionName, $config, $adapter);
 
         if (true === $isDumped) {
             $result = $this->importDatabase($dbDefaultConfig, $config);
@@ -182,15 +176,17 @@ class SyncService
 
 
     public function createMySqlDumpByConfig(
-        ConnectionInterface $sshConn,
+        string $connectionName,
         array $config,
         Filesystem $filesystem
     ): bool {
+        $sshConn = $sshManager->connection($connectionName);
         if ($this->hasOutput()) {
             $this->getOutput()->writeln('dumping database ' . $config['database'] . ' started');
         }
 
         $this->runSSHCommand(
+            $connectionName,
             $sshConn,
             [
                 "mysqldump --routines --triggers -h{$config['host']} -u{$config['user']} -p'{$config['password']}' {$config['database']} " .
@@ -202,6 +198,7 @@ class SyncService
         $sshConn->get($config['remotePath'], $config['localPath']);
 
         $this->runSSHCommand(
+            $connectionName,
             $sshConn,
             [
                 'rm -f ' . $config['remotePath']
@@ -259,8 +256,12 @@ class SyncService
         return $result;
     }
 
-    protected function runSSHCommand(ConnectionInterface $sshConn, array $commands): void
-    {
+    protected function runSSHCommand(
+        string $connectionName,
+        Connection $sshConn,
+        array $commands,
+        int $retryAmount = 1
+    ): void {
         try {
             $sshConn->run(
                 $commands,
@@ -275,6 +276,11 @@ class SyncService
             app('log')->error($e->getMessage(), [
                 'exception' => $e,
             ]);
+            $sshConnNew = $this->getSshManager()->connection($connectionName);
+            if ($retryAmount !== 0) {
+                $retryAmount--;
+                $this->runSSHCommand($connectionName, $sshConnNew, $commands, $retryAmount);
+            }
         }
     }
 }
