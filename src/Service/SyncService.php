@@ -2,7 +2,7 @@
 
 namespace N3XT0R\MySqlSync\Service;
 
-use Collective\Remote\ConnectionInterface;
+use Collective\Remote\Connection;
 use Collective\Remote\RemoteManager;
 use Illuminate\Config\Repository;
 use Illuminate\Contracts\Filesystem\Filesystem;
@@ -115,6 +115,7 @@ class SyncService
                 'database' => $dbConfig['database'],
                 'user' => $dbConfig['user'],
                 'password' => $dbConfig['password'],
+                'tmp_path' => $config->get('mysql-sync.tmp_path', '/tmp') . DIRECTORY_SEPARATOR,
             ];
         }
 
@@ -125,15 +126,12 @@ class SyncService
     public function sync(string $environment, bool $useLocalDump = false): bool
     {
         $result = true;
-        $sshManager = $this->getSshManager();
         $connectionConfig = $this->getPreparedConnectionConfig($environment);
 
 
         foreach ($connectionConfig as $connection => $configs) {
-            $sshConn = $sshManager->connection($connection);
-
             foreach ($configs as $config) {
-                if (false === $this->runDatabaseCopy($sshConn, $config, $useLocalDump)) {
+                if (false === $this->runDatabaseCopy($connection, $config)) {
                     $result = false;
                 }
             }
@@ -144,7 +142,7 @@ class SyncService
     }
 
 
-    protected function runDatabaseCopy(ConnectionInterface $sshConn, array $config, bool $useLocalDump): bool
+    protected function runDatabaseCopy(string $connectionName, array $config): bool
     {
         $result = false;
         $storagePath = $this->getStoragePath();
@@ -160,30 +158,13 @@ class SyncService
             $adapter->createDir('dumps');
             $adapter->put('dumps/.gitignore', '*');
         }
+        $tmpName = $config['database'] . '_' . date('YmdHis') . '.sql.gz';
+        $config['remotePath'] = $config['tmp_path'] . $tmpName;
+        $config['relativeLocalPath'] = 'dumps' . DIRECTORY_SEPARATOR . $tmpName;
+        $config['localPath'] = $storagePath . DIRECTORY_SEPARATOR . $config['relativeLocalPath'];
 
-        if (false === $useLocalDump) {
-            $tmpName = $config['database'] . '_' . date('YmdHis') . '.sql';
-            $config['remotePath'] = '/tmp/' . $tmpName;
-            $config['relativeLocalPath'] = 'dumps' . DIRECTORY_SEPARATOR . $tmpName;
-            $config['localPath'] = $storagePath . DIRECTORY_SEPARATOR . $config['relativeLocalPath'];
-            $isDumped = $this->createMySqlDumpByConfig($sshConn, $config, $adapter);
-        } else {
-            $tmpName = '';
-            $files = $filesystem->files();
-            $matchingFiles = preg_grep('/^' . $config['database'] . '_/', $files);
-            $lastTimeStamp = 0;
-            foreach ($matchingFiles as $file) {
-                $time = explode('_', $file)[1];
-                if ($lastTimeStamp < $time) {
-                    $tmpName = $file;
-                }
-            }
-            $config['remotePath'] = '/tmp/' . $tmpName;
-            $config['relativeLocalPath'] = 'dumps' . DIRECTORY_SEPARATOR . $tmpName;
-            $config['localPath'] = $storagePath . DIRECTORY_SEPARATOR . $config['relativeLocalPath'];
-            $isDumped = !empty($tmpName);
-        }
 
+        $isDumped = $this->createMySqlDumpByConfig($connectionName, $config, $adapter);
 
         if (true === $isDumped) {
             $result = $this->importDatabase($dbDefaultConfig, $config);
@@ -194,29 +175,34 @@ class SyncService
 
 
     public function createMySqlDumpByConfig(
-        ConnectionInterface $sshConn,
+        string $connectionName,
         array $config,
         Filesystem $filesystem
     ): bool {
+        $sshConn = $this->getSshManager()->connection($connectionName);
         if ($this->hasOutput()) {
             $this->getOutput()->writeln('dumping database ' . $config['database'] . ' started');
         }
 
         $this->runSSHCommand(
+            $connectionName,
             $sshConn,
             [
                 "mysqldump --routines --triggers -h{$config['host']} -u{$config['user']} -p'{$config['password']}' {$config['database']} " .
-                "| sed -e 's/DEFINER[ ]*=[ ]*[^*]*\*/\*/' > " . $config['remotePath']
+                "| sed -e 's/DEFINER[ ]*=[ ]*[^*]*\*/\*/' " .
+                "| gzip -9 > " . $config['remotePath']
             ]
         );
 
         $sshConn->get($config['remotePath'], $config['localPath']);
 
         $this->runSSHCommand(
+            $connectionName,
             $sshConn,
             [
                 'rm -f ' . $config['remotePath']
-            ]
+            ],
+            3
         );
 
         if ($this->hasOutput()) {
@@ -241,10 +227,10 @@ class SyncService
              * because array will be handled with exec command. exec crashes the import.
              */
             $importProcess = new Process(
-                'mysql -h' . $dbDefaultConfig['host'] . ' -u' . $dbDefaultConfig['username'] .
-                ' -p' . $dbDefaultConfig['password'] . ' ' . $config['database'] .
-                ' < ' .
-                $config['localPath'],
+                "zcat " . $config['localPath'] .
+                '| mysql -h' . $dbDefaultConfig['host'] . ' -u' . $dbDefaultConfig['username'] .
+                ' -p' . $dbDefaultConfig['password'] . ' ' . $config['database']
+                ,
                 null,
                 null,
                 null,
@@ -270,16 +256,32 @@ class SyncService
         return $result;
     }
 
-    protected function runSSHCommand(ConnectionInterface $sshConn, array $commands): void
-    {
-        $sshConn->run(
-            $commands,
-            function (string $line) {
-                if ($this->hasOutput()) {
-                    $output = $this->getOutput();
-                    $output->writeln($line);
+    protected function runSSHCommand(
+        string $connectionName,
+        Connection $sshConn,
+        array $commands,
+        int $retryAmount = 1
+    ): void {
+        try {
+            $sshConn->run(
+                $commands,
+                function (string $line) {
+                    if ($this->hasOutput()) {
+                        $output = $this->getOutput();
+                        $output->writeln($line);
+                    }
                 }
+            );
+        } catch (\Throwable $e) {
+            if ($retryAmount !== 0) {
+                $retryAmount--;
+                $sshConnNew = $this->getSshManager()->connection($connectionName);
+                $this->runSSHCommand($connectionName, $sshConnNew, $commands, $retryAmount);
+            } else {
+                app('log')->error($e->getMessage(), [
+                    'exception' => $e,
+                ]);
             }
-        );
+        }
     }
 }
